@@ -28,9 +28,14 @@ class LongShortTermMemory:
         ]
         return defined_metrics
 
-    def get_callback(self):
-        callback = tf.keras.callbacks.EarlyStopping(monitor='val_loss', patience=3, mode='min', verbose=1)
-        return callback
+    def get_callbacks(self):
+        early_stop = tf.keras.callbacks.EarlyStopping(
+            monitor='val_loss', patience=5, mode='min', verbose=1,
+            restore_best_weights=True)
+        checkpoint = tf.keras.callbacks.ModelCheckpoint(
+            filepath=os.path.join(self.project_folder, 'best_model.h5'),
+            monitor='val_loss', save_best_only=True, mode='min', verbose=1)
+        return [early_stop, checkpoint]
 
     def create_model(self, x_train):
         model = Sequential()
@@ -38,7 +43,7 @@ class LongShortTermMemory:
         # * units = add 100 neurons is the dimensionality of the output space
         # * return_sequences = True to stack LSTM layers so the next LSTM layer has a three-dimensional sequence input
         # * input_shape => Shape of the training dataset
-        model.add(LSTM(units=100, return_sequences=True, input_shape=(x_train.shape[1], 1)))
+        model.add(LSTM(units=100, return_sequences=True, input_shape=(x_train.shape[1], x_train.shape[2])))
         # 20% of the layers will be dropped
         model.add(Dropout(0.2))
         # 2nd LSTM layer

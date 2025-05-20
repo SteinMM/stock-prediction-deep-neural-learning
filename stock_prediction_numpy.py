@@ -47,17 +47,17 @@ class StockData:
     def download_transform_to_numpy(self, time_steps, project_folder):
         end_date = datetime.today()
         print('End Date: ' + end_date.strftime("%Y-%m-%d"))
-        data = yf.download([self._stock.get_ticker()], start=self._stock.get_start_date(), end=end_date)[['Close']]
+        features = self._stock.get_features()
+        data = yf.download(self._stock.get_ticker(), start=self._stock.get_start_date(), end=end_date)
+        data = data[features]
         data = data.reset_index()
-        data.to_csv(os.path.join(project_folder, 'downloaded_data_'+self._stock.get_ticker()+'.csv'))
-        #print(data)
+        data.to_csv(os.path.join(project_folder, 'downloaded_data_' + self._stock.get_ticker() + '.csv'))
 
         training_data = data[data['Date'] < self._stock.get_validation_date()].copy()
         test_data = data[data['Date'] >= self._stock.get_validation_date()].copy()
         training_data = training_data.set_index('Date')
         # Set the data frame index using column Date
         test_data = test_data.set_index('Date')
-        #print(test_data)
 
         train_scaled = self._min_max.fit_transform(training_data)
         self.__data_verification(train_scaled)
@@ -65,26 +65,27 @@ class StockData:
         # Training Data Transformation
         x_train = []
         y_train = []
+        close_idx = features.index('Close')
         for i in range(time_steps, train_scaled.shape[0]):
             x_train.append(train_scaled[i - time_steps:i])
-            y_train.append(train_scaled[i, 0])
+            y_train.append(train_scaled[i, close_idx])
 
         x_train, y_train = np.array(x_train), np.array(y_train)
-        x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], 1))
+        x_train = np.reshape(x_train, (x_train.shape[0], x_train.shape[1], len(features)))
 
         total_data = pd.concat((training_data, test_data), axis=0)
         inputs = total_data[len(total_data) - len(test_data) - time_steps:]
-        test_scaled = self._min_max.fit_transform(inputs)
+        test_scaled = self._min_max.transform(inputs)
 
         # Testing Data Transformation
         x_test = []
         y_test = []
         for i in range(time_steps, test_scaled.shape[0]):
             x_test.append(test_scaled[i - time_steps:i])
-            y_test.append(test_scaled[i, 0])
+            y_test.append(test_scaled[i, close_idx])
 
         x_test, y_test = np.array(x_test), np.array(y_test)
-        x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], 1))
+        x_test = np.reshape(x_test, (x_test.shape[0], x_test.shape[1], len(features)))
         return (x_train, y_train), (x_test, y_test), (training_data, test_data)
 
     def __date_range(self, start_date, end_date):

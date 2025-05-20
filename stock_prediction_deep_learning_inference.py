@@ -27,7 +27,9 @@ os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
 def main(argv):
     print(tf.version.VERSION)
     inference_folder = os.path.join(os.getcwd(), RUN_FOLDER)
-    stock = StockPrediction(STOCK_TICKER, STOCK_START_DATE, STOCK_VALIDATION_DATE, inference_folder)
+    stock = StockPrediction(STOCK_TICKER, STOCK_START_DATE, STOCK_VALIDATION_DATE, inference_folder,
+                           github_url=None, epochs=1, time_steps=TIME_STEPS, token='inference',
+                           batch_size=1, features=['Open', 'High', 'Low', 'Close', 'Volume'])
 
     data = StockData(stock)
 
