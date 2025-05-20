@@ -15,7 +15,9 @@
 
 
 class StockPrediction:
-    def __init__(self, ticker, start_date, validation_date, project_folder, github_url, epochs, time_steps, token, batch_size):
+    def __init__(self, ticker, start_date, validation_date, project_folder,
+                 github_url, epochs, time_steps, token, batch_size,
+                 features=None):
         self._ticker = ticker
         self._start_date = start_date
         self._validation_date = validation_date
@@ -25,6 +27,8 @@ class StockPrediction:
         self._time_steps = time_steps
         self._token = token
         self._batch_size = batch_size
+        # Use typical OHLCV data by default
+        self._features = features or ['Open', 'High', 'Low', 'Close', 'Volume']
 
     def get_ticker(self):
         return self._ticker
@@ -63,7 +67,10 @@ class StockPrediction:
         return self._time_steps
         
     def get_token(self):
-        return self._token     
-    
+        return self._token
+
     def get_batch_size(self):
-        return self._batch_size     
+        return self._batch_size
+
+    def get_features(self):
+        return self._features

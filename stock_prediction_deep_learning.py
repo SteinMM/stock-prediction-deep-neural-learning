@@ -36,8 +36,8 @@ def train_LSTM_network(stock):
     lstm = LongShortTermMemory(stock.get_project_folder())
     model = lstm.create_model(x_train)
     model.compile(optimizer='adam', loss='mean_squared_error', metrics=lstm.get_defined_metrics())
-    history = model.fit(x_train, y_train, epochs=stock.get_epochs(), batch_size=stock.get_batch_size(), validation_data=(x_test, y_test),
-                        callbacks=[lstm.get_callback()])
+    history = model.fit(x_train, y_train, epochs=stock.get_epochs(), batch_size=stock.get_batch_size(),
+                        validation_data=(x_test, y_test), callbacks=lstm.get_callbacks())
     print("saving weights")
     model.save(os.path.join(stock.get_project_folder(), 'model_weights.h5'))
 
@@ -109,6 +109,7 @@ if __name__ == '__main__':
                                        EPOCHS,
                                        TIME_STEPS,
                                        TOKEN,
-                                       BATCH_SIZE)
+                                       BATCH_SIZE,
+                                       ['Open', 'High', 'Low', 'Close', 'Volume'])
     # Execute Deep Learning model
     train_LSTM_network(stock_prediction)
